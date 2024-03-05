@@ -13,6 +13,7 @@ async function fetchAndSaveData(apiUrl, token, response) {
       },
     });
     const workspaces = projectsResponse.data.teams;
+    console.log();
     await Workspace.deleteMany();
     await Workspace.create(workspaces);
 

@@ -69,7 +69,6 @@ async function saveTasksFromClickup(apiUrl, token, listId) {
 
 async function getAllTasks(req, res) {
   try {
-    // Récupérer les paramètres de requête
     const {
       creator,
       assignee,
@@ -102,7 +101,7 @@ async function getAllTasks(req, res) {
 
     const tasks = await Task.find(filter)
       .sort(order_by)
-      .skip((parseInt(page) - 1) * 10) // Assurez-vous de convertir page en nombre
+      .skip((parseInt(page) - 1) * 10)
       .limit(10);
 
     res.json(tasks);

@@ -1,5 +1,3 @@
-// clickUpController.js
-
 const axios = require("axios");
 
 async function getFolderLists(apiUrl, token, spaceId) {
@@ -36,5 +34,4 @@ async function getFolderLessLists(apiUrl, token, spaceId) {
   }
 }
 
-// Export des fonctions pour les rendre accessibles depuis d'autres fichiers
 module.exports = { getFolderLists, getFolderLessLists };
