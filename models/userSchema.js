@@ -1,17 +1,16 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
-  id: Number,
-  username: String,
-  email: String,
-  color: String,
-  profilePicture: String,
-  initials: String,
-  role: Number,
-  custom_role: String,
-  last_active: String,
-  date_joined: String,
-  date_invited: String,
-});
+const userSchema = new mongoose.Schema(
+  {
+    id: {
+      type: Number, // Utiliser Number si l'ID est un nombre
+      required: true, // Vous pouvez ajuster cela en fonction de vos besoins
+      unique: true, // Assurez-vous qu'aucun autre utilisateur n'a le même ID
+    },
+  },
+  { strict: false }
+); // Permet un schéma dynamique
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+
+module.exports = User;

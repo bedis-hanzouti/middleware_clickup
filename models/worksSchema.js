@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("./userSchema");
 const List = require("./listSchema");
-const projectSchema = new mongoose.Schema({
+const workspacetSchema = new mongoose.Schema({
   id: String,
   name: String,
   color: String,
@@ -10,4 +10,4 @@ const projectSchema = new mongoose.Schema({
   lists: [List.schema],
 });
 
-module.exports = mongoose.model("Project", projectSchema);
+module.exports = mongoose.model("Workspace", workspacetSchema);

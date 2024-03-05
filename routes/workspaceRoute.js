@@ -1,11 +1,11 @@
 const express = require("express");
 const route = express.Router();
-const projectController = require("../controllers/projectControlller");
+const projectController = require("../controllers/workspaceController");
 
 const api_url = process.env.API_CLICKUP;
 const token = process.env.TOKEN_CLICKUP;
 
-route.get("/projects", async (req, res) => {
+route.get("", async (req, res) => {
   try {
     await projectController.fetchAndSaveData(api_url, token, res);
   } catch (error) {
