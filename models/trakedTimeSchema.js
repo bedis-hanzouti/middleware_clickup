@@ -1,22 +1,22 @@
 const mongoose = require("mongoose");
 
-const taskSchema = new mongoose.Schema(
+const trakedTime = new mongoose.Schema(
   {
     id: {
-      type: String,
+      type: Number,
       required: true,
       unique: true,
     },
-    assignees: [
+    task: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Task",
       },
     ],
   },
   { strict: false }
 );
 
-const Task = mongoose.model("Task", taskSchema);
+const TrakedTime = mongoose.model("TrakedTime", trakedTime);
 
-module.exports = Task;
+module.exports = TrakedTime;

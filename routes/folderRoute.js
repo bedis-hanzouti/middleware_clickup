@@ -19,4 +19,6 @@ route.get("/:spaceId/spaceLists", async (req, res) => {
   }
 });
 
+route.get("/", folderController.getFolders);
+
 module.exports = route;

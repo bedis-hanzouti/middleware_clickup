@@ -4,15 +4,17 @@ const listSchema = new mongoose.Schema(
   {
     id: {
       type: Number,
-      required: true,
+
       unique: true,
     },
-    assigneess: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    folder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Folder",
+    },
+    space: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Space",
+    },
   },
   { strict: false }
 );

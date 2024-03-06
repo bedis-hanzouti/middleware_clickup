@@ -1,7 +1,6 @@
 const axios = require("axios");
 const mongoose = require("mongoose");
-const DataSchema = new mongoose.Schema({}, { strict: false });
-const Space = mongoose.model("Space", DataSchema);
+const Space = require("../models/spaceSchema");
 
 async function getSpaceLists(apiUrl, token, workspaceId) {
   try {
@@ -14,8 +13,14 @@ async function getSpaceLists(apiUrl, token, workspaceId) {
       }
     );
     const spaces = spaceListsResponse.data.spaces;
-    await Space.deleteMany();
-    await Space.insertMany(spaces);
+
+    for (const space of spaces) {
+      const existingSpace = await Space.findOneAndUpdate(
+        { id: space.id },
+        space,
+        { upsert: true, new: true }
+      );
+    }
 
     return spaces;
   } catch (error) {
@@ -23,4 +28,5 @@ async function getSpaceLists(apiUrl, token, workspaceId) {
     throw error;
   }
 }
+
 module.exports = { getSpaceLists };

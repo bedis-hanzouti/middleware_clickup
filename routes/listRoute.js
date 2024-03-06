@@ -5,13 +5,13 @@ const listController = require("../controllers/listController");
 const api_url = process.env.API_CLICKUP;
 const token = process.env.TOKEN_CLICKUP;
 
-route.get("/:spaceId/folderLists", async (req, res) => {
+route.get("/:space_id/lists", async (req, res) => {
   try {
-    const spaceId = req.params.spaceId;
-    const folderLists = await listController.getFolderLists(
+    const space_id = req.params.space_id;
+    const folderLists = await listController.getListsOutFolders(
       api_url,
       token,
-      spaceId
+      space_id
     );
     res.json(folderLists);
   } catch (error) {
@@ -19,14 +19,16 @@ route.get("/:spaceId/folderLists", async (req, res) => {
   }
 });
 
-route.get("/api/space/:spaceId/folderLessLists", async (req, res) => {
+route.get("/:folderId/folderLists", async (req, res) => {
   try {
-    const spaceId = req.params.spaceId;
-    const folderLists = await listController.ge(api_url, token, spaceId);
+    const folderId = req.params.folderId;
+    const folderLists = await listController.ge(api_url, token, folderId);
     res.json(folderLists);
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+route.get("/", listController.getLists);
 
 module.exports = route;

@@ -24,14 +24,7 @@ async function saveTasksFromClickup(apiUrl, token, listId) {
         if (!user) {
           const userData = taskData.assignees[0];
 
-          user = new User({
-            id: userData.id,
-            username: userData.username,
-            color: userData.color,
-            email: userData.email,
-            profilePicture: userData.profilePicture,
-            role: userData.role,
-          });
+          user = new User(userData);
 
           await user.save();
         }
@@ -39,12 +32,7 @@ async function saveTasksFromClickup(apiUrl, token, listId) {
         const newTask = new Task(taskData);
 
         const assigneeObj = {
-          clickup_id: user.id,
-          username: user.username,
-          color: user.color,
-          email: user.email,
-          profilePicture: user.profilePicture,
-          role: user.role,
+          ...user,
           _id: user._id,
         };
 
@@ -70,7 +58,6 @@ async function saveTasksFromClickup(apiUrl, token, listId) {
 async function getAllTasks(req, res) {
   try {
     const {
-      creator,
       assignee,
       status,
       tags,
@@ -84,8 +71,7 @@ async function getAllTasks(req, res) {
     } = req.query;
 
     const filter = {};
-    if (creator)
-      filter["creator.username"] = { $regex: new RegExp(creator, "i") };
+
     if (assignee)
       filter["assignees.username"] = { $regex: new RegExp(assignee, "i") };
     if (status) filter["status.status"] = { $regex: new RegExp(status, "i") };

@@ -14,5 +14,8 @@ route.get("/:listId/userList", async (req, res) => {
     res.status(500).json({ error: error });
   }
 });
+route.get("/:userId", userController.getUserById);
+route.get("/", userController.getUserEmail);
+route.get("/:taskId/task", userController.getUserByTask);
 
 module.exports = route;
