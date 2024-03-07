@@ -55,6 +55,62 @@ async function saveTasksFromClickup(apiUrl, token, listId) {
   }
 }
 
+async function getAllTasksFromClickup(apiUrl, token, team_Id) {
+  try {
+    const tasksResponse = await axios.get(
+      `https://api.clickup.com/api/v2/team/${team_Id}/task`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+    const tasks = tasksResponse.data.tasks;
+
+    await Task.deleteMany();
+    let newTask;
+    for (const taskData of tasks) {
+      if (taskData.assignees && taskData.assignees.length > 0) {
+        const memberId = taskData.assignees[0].id;
+
+        let user = await User.findOne({ id: memberId });
+        if (!user) {
+          const userData = taskData.assignees[0];
+
+          user = new User(userData);
+
+          await user.save();
+        }
+
+        newTask = new Task(taskData);
+
+        const assigneeObj = {
+          ...user,
+          _id: user._id,
+        };
+
+        newTask.assignees = [assigneeObj];
+
+        await newTask.save();
+      } else {
+        newTask = new Task(taskData);
+        await newTask.save();
+      }
+    }
+
+    const response = {
+      message: "Tasks saved successfully",
+      status: 200,
+      count: tasks.length,
+    };
+
+    return response;
+  } catch (error) {
+    console.error("Error fetching space lists:", error);
+    throw error;
+  }
+}
+
 async function getAllTasks(req, res) {
   try {
     const {
@@ -83,9 +139,10 @@ async function getAllTasks(req, res) {
     if (list) filter["list.name"] = { $regex: new RegExp(list, "i") };
     if (space) filter["space.id"] = space;
 
-    console.log("filter", filter);
+    // console.log("filter", filter);
 
     const tasks = await Task.find(filter)
+      .populate("assignees")
       .sort(order_by)
       .skip((parseInt(page) - 1) * 10)
       .limit(10);
@@ -174,8 +231,9 @@ async function getTasksByTags(req, res) {
   }
 }
 module.exports = {
-  saveTasksFromClickup,
+  // saveTasksFromClickup,
   getAllTasks,
+  getAllTasksFromClickup,
   getTaskById,
   getTasksByAssignees,
   getTasksByStatus,

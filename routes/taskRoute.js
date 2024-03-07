@@ -5,13 +5,27 @@ const taskController = require("../controllers/taskController");
 const api_url = process.env.API_CLICKUP;
 const token = process.env.TOKEN_CLICKUP;
 
-route.get("/:listId/tasks", async (req, res) => {
+// route.get("/:listId/tasks", async (req, res) => {
+//   try {
+//     const listId = req.params.listId;
+//     const taskList = await taskController.saveTasksFromClickup(
+//       api_url,
+//       token,
+//       listId
+//     );
+//     res.json(taskList);
+//   } catch (error) {
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+route.get("/:teamId/", async (req, res) => {
   try {
-    const listId = req.params.listId;
-    const taskList = await taskController.saveTasksFromClickup(
+    const teamId = req.params.teamId;
+    const taskList = await taskController.getAllTasksFromClickup(
       api_url,
       token,
-      listId
+      teamId
     );
     res.json(taskList);
   } catch (error) {

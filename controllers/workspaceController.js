@@ -4,10 +4,9 @@ const List = require("../models/listSchema");
 const User = require("../models/userSchema");
 const Space = require("../models/spaceSchema");
 const Folder = require("../models/folderSchema");
+const Workspace = require("../models/worksSchema");
 const DataSchema = new mongoose.Schema({}, { strict: false });
 const Test = mongoose.model("Data", DataSchema);
-
-const Workspace = mongoose.model("Workspace", DataSchema);
 
 async function fetchAndSaveData(apiUrl, token, response) {
   try {
@@ -19,7 +18,6 @@ async function fetchAndSaveData(apiUrl, token, response) {
       },
     });
     const workspaces = projectsResponse.data.teams;
-
     for (const data of workspaces) {
       for (const newUser of data.members) {
         const memberId = newUser.user.id;
@@ -41,8 +39,11 @@ async function fetchAndSaveData(apiUrl, token, response) {
         // }
       }
     }
+    console.log(workspaces.id);
+    let workspaceData = new Workspace(workspaces[0]);
 
-    await Workspace.create(workspaces);
+    await workspaceData.save();
+    9015388447;
 
     await List.deleteMany();
 
