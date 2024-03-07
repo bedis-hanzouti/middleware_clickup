@@ -8,11 +8,12 @@ const token = process.env.TOKEN_CLICKUP;
 route.get("/:task_id/trackedList", async (req, res) => {
   try {
     const task_id = req.params.task_id;
-    const trackedLists = await trackedTimeController.saveTrackedTimeFromClickup(
-      api_url,
-      token,
-      task_id
-    );
+    const trackedLists =
+      await trackedTimeController.getAllTrackedTimeFromClickup(
+        api_url,
+        token,
+        task_id
+      );
     res.json(trackedLists);
   } catch (error) {
     res.status(500).json({ error: error });

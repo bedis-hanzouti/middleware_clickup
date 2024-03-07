@@ -2,7 +2,7 @@ const axios = require("axios");
 const TrackedTime = require("../models/trakedTimeSchema");
 const User = require("../models/userSchema");
 
-async function saveTrackedTimeFromClickup(apiUrl, token, task_id) {
+async function getAllTrackedTimeFromClickup(apiUrl, token, task_id) {
   try {
     const trackedTimeResponse = await axios.get(
       `https://api.clickup.com/api/v2/task/${task_id}/time`,
@@ -13,47 +13,19 @@ async function saveTrackedTimeFromClickup(apiUrl, token, task_id) {
         },
       }
     );
-    const trackedTimees = trackedTimeResponse.data;
+    const trackedTimees = trackedTimeResponse.data.data;
 
     await TrackedTime.deleteMany();
+    for (const trackedData of trackedTimees) {
+      if (trackedData.user) {
+        const memberId = trackedData.user.id;
+        let user = await User.findOne({ id: memberId });
 
-    // for (const taskData of trackedTimees) {
-    //   if (taskData.assignees && taskData.assignees.length > 0) {
-    //     const memberId = taskData.assignees[0].id;
+        const newTask = new TrackedTime({ ...trackedData, user: user._id });
 
-    //     let user = await User.findOne({ id: memberId });
-    //     if (!user) {
-    //       const userData = taskData.assignees[0];
-
-    //       user = new User({
-    //         id: userData.id,
-    //         username: userData.username,
-    //         color: userData.color,
-    //         email: userData.email,
-    //         profilePicture: userData.profilePicture,
-    //         role: userData.role,
-    //       });
-
-    //       await user.save();
-    //     }
-
-    //     const newTask = new TrackedTime(taskData);
-
-    //     const assigneeObj = {
-    //       clickup_id: user.id,
-    //       username: user.username,
-    //       color: user.color,
-    //       email: user.email,
-    //       profilePicture: user.profilePicture,
-    //       role: user.role,
-    //       _id: user._id,
-    //     };
-
-    //     newTask.assignees = [assigneeObj];
-
-    //     await newTask.save();
-    //   }
-    // }
+        await newTask.save();
+      }
+    }
 
     const response = {
       message: "TrackedTimes saved successfully",
@@ -191,7 +163,7 @@ async function saveTrackedTimeFromClickup(apiUrl, token, task_id) {
 //   }
 // }
 module.exports = {
-  saveTrackedTimeFromClickup,
+  getAllTrackedTimeFromClickup,
   //   getAllTasks,
   //   getTaskById,
   //   getTasksByAssignees,

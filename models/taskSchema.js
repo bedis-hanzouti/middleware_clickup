@@ -7,7 +7,7 @@ const taskSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    assignees: [
+    user: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

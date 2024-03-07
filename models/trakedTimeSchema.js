@@ -4,7 +4,6 @@ const trakedTime = new mongoose.Schema(
   {
     id: {
       type: Number,
-      required: true,
       unique: true,
     },
     task: [

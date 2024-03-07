@@ -19,4 +19,6 @@ route.get("/:workspaceId/spaceLists", async (req, res) => {
   }
 });
 
+route.get("/", spaceController.getSpaces);
+
 module.exports = route;
