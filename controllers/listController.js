@@ -15,10 +15,10 @@ async function getListsOutFolders(apiUrl, token, space_id) {
       }
     );
     const lists = folderListsResponse.data.lists;
-    console.log("space", space_id);
+    // console.log("space", space_id);
     // Récupérer l'objet Space correspondant à l'espace spécifié
     let space = await Space.findOne({ id: space_id });
-    console.log("space", space);
+    // console.log("space", space);
     if (!space) {
       space = new Space({ id: space_id });
       await space.save();
@@ -39,7 +39,7 @@ async function getListsOutFolders(apiUrl, token, space_id) {
         space: space._id,
         folder: folder._id,
       });
-      console.log("newList", newList);
+      // console.log("newList", newList);
 
       await newList.save();
     }

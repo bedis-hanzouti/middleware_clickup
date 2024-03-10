@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const workspaceSchema = new mongoose.Schema(
   {
     id: {
-      type: Number,
+      type: String,
       unique: true,
     },
   },

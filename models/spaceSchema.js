@@ -3,13 +3,13 @@ const mongoose = require("mongoose");
 const spaceSchema = new mongoose.Schema(
   {
     id: {
-      type: Number,
+      type: String,
       required: true,
       unique: true,
     },
     members: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Object,
         ref: "User",
       },
     ],

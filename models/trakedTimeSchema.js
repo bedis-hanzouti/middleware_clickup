@@ -3,12 +3,12 @@ const mongoose = require("mongoose");
 const trakedTime = new mongoose.Schema(
   {
     id: {
-      type: Number,
+      type: String,
       unique: true,
     },
     task: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Object,
         ref: "Task",
       },
     ],

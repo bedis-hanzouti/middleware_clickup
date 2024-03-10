@@ -68,7 +68,7 @@ async function getFoldersBySpace(apiUrl, token, spaceId) {
 
     return response;
   } catch (error) {
-    console.error("Error fetching space lists:", error);
+    console.error("Error fetching folder lists:", error.message);
     throw error;
   }
 }

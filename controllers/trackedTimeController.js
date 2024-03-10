@@ -33,7 +33,7 @@ async function getAllTrackedTimeFromClickup(apiUrl, token, task_id) {
       count: trackedTimees.length,
     };
 
-    return response;
+    return trackedTimees;
   } catch (error) {
     const response = {
       message: error.message,
@@ -41,6 +41,58 @@ async function getAllTrackedTimeFromClickup(apiUrl, token, task_id) {
     };
 
     return response;
+  }
+}
+
+async function getAllTrackedTimeFromClickupv1(apiUrl, token, task_id) {
+  try {
+    const trackedTimeResponse = await axios.get(
+      `https://api.clickup.com/api/v2/task/${task_id}/time`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+      }
+    );
+
+    const trackedTimes = trackedTimeResponse.data.data;
+
+    let savedTrackedTimes = [];
+
+    for (const trackedData of trackedTimes) {
+      if (trackedData.user) {
+        const memberId = trackedData.user.id;
+        let user = await User.findOne({ id: memberId });
+
+        if (!user) {
+          user = new User({
+            id: memberId,
+          });
+          await user.save();
+        }
+
+        const newTrackedTime = new TrackedTime({
+          ...trackedData,
+          user: user._id,
+        });
+
+        await newTrackedTime.save();
+        savedTrackedTimes.push(newTrackedTime);
+      }
+    }
+
+    const response = {
+      message: "Tracked times saved successfully",
+      status: 200,
+      count: savedTrackedTimes.length,
+      trackedTimes: savedTrackedTimes,
+    };
+
+    return response;
+  } catch (error) {
+    console.error("Error fetching or saving tracked times:", error);
+    throw error;
   }
 }
 

@@ -3,16 +3,14 @@ const mongoose = require("mongoose");
 const listSchema = new mongoose.Schema(
   {
     id: {
-      type: Number,
-
-      unique: true,
+      type: String,
     },
     folder: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Object,
       ref: "Folder",
     },
     space: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Object,
       ref: "Space",
     },
   },

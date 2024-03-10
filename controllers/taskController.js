@@ -1,6 +1,7 @@
 const axios = require("axios");
 const Task = require("../models/taskSchema");
 const User = require("../models/userSchema");
+const List = require("../models/listSchema");
 
 async function saveTasksFromClickup(apiUrl, token, listId) {
   try {
@@ -55,7 +56,7 @@ async function saveTasksFromClickup(apiUrl, token, listId) {
   }
 }
 
-async function getAllTasksFromClickup(apiUrl, token, team_Id) {
+async function getAllTasksFromClickupv0(apiUrl, token, team_Id) {
   try {
     const tasksResponse = await axios.get(
       `https://api.clickup.com/api/v2/team/${team_Id}/task`,
@@ -107,6 +108,76 @@ async function getAllTasksFromClickup(apiUrl, token, team_Id) {
     return response;
   } catch (error) {
     console.error("Error fetching space lists:", error);
+    throw error;
+  }
+}
+async function getAllTasksFromClickup(apiUrl, token, team_Id) {
+  try {
+    const tasksResponse = await axios.get(
+      `https://api.clickup.com/api/v2/team/${team_Id}/task`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+    const tasks = tasksResponse.data.tasks;
+
+    let savedTasks = [];
+
+    // Iterate through tasks
+    for (const taskData of tasks) {
+      let newTask;
+      console.log("folder in task ", taskData);
+
+      let folder = await List.findOne({ id: taskData.folder.id });
+      let list = await List.findOne({ id: taskData.list.id });
+      // console.log("list", list.name);
+      newTask = await Task.findOneAndUpdate(
+        { id: taskData.id },
+        { ...taskData, list: list._id },
+
+        { upsert: true, new: true }
+      );
+
+      if (taskData.assignees && taskData.assignees.length > 0) {
+        const memberId = taskData.assignees[0].id;
+        // console.log(taskData.list);
+
+        let user = await User.findOne({ id: memberId });
+
+        if (!user) {
+          const userData = taskData.assignees[0];
+          user = new User(userData);
+          await user.save();
+        }
+
+        newTask = await Task.findOneAndUpdate(
+          { id: taskData.id },
+          { ...taskData, list: list._id, assignees: [user._id] },
+
+          { upsert: true, new: true }
+        );
+      } else {
+        newTask = await Task.findOneAndUpdate({ id: taskData.id }, taskData, {
+          upsert: true,
+          new: true,
+        });
+      }
+
+      savedTasks.push(newTask);
+    }
+
+    const response = {
+      message: "Tasks saved successfully",
+      status: 200,
+      count: savedTasks.length,
+      tasks: savedTasks,
+    };
+
+    return savedTasks;
+  } catch (error) {
+    console.error("Error fetching task lists:", error);
     throw error;
   }
 }
@@ -171,7 +242,7 @@ async function getTaskById(req, res) {
 async function getTasksByAssignees(req, res) {
   try {
     const { assigneeId } = req.params;
-    console.log(assigneeId);
+    // console.log(assigneeId);
 
     const tasks = await Task.find();
 

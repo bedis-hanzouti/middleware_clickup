@@ -47,9 +47,10 @@ async function getSpaceLists(apiUrl, token, workspaceId) {
       message: "Spaces saved successfully",
       status: 200,
       count: spaces.length,
+      dara: spaces,
     };
 
-    return response;
+    return spaces;
   } catch (error) {
     console.error("Error fetching space lists:", error);
     throw error;

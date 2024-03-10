@@ -4,15 +4,17 @@ const taskSchema = new mongoose.Schema(
   {
     id: {
       type: String,
-      required: true,
-      unique: true,
     },
     user: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Object,
         ref: "User",
       },
     ],
+    list: {
+      type: Object,
+      ref: "List",
+    },
   },
   { strict: false }
 );

@@ -14,7 +14,6 @@ async function getUserLists(apiUrl, token, list_id) {
       }
     );
     const users = userListsResponse.data;
-    console.log("user", users);
     for (const userData of users.members) {
       if (userData && userData.length > 0) {
         const memberId = userData.id;
