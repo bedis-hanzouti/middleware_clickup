@@ -2,6 +2,8 @@ const axios = require("axios");
 const Task = require("../models/taskSchema");
 const User = require("../models/userSchema");
 const List = require("../models/listSchema");
+const Folder = require("../models/folderSchema");
+const Space = require("../models/spaceSchema");
 
 async function saveTasksFromClickup(apiUrl, token, listId) {
   try {
@@ -127,42 +129,28 @@ async function getAllTasksFromClickup(apiUrl, token, team_Id) {
 
     // Iterate through tasks
     for (const taskData of tasks) {
-      let newTask;
-      console.log("folder in task ", taskData);
-
-      let folder = await List.findOne({ id: taskData.folder.id });
+      let folder = await Folder.findOne({ id: taskData.folder.id });
       let list = await List.findOne({ id: taskData.list.id });
-      // console.log("list", list.name);
-      newTask = await Task.findOneAndUpdate(
-        { id: taskData.id },
-        { ...taskData, list: list._id },
+      let space = await Space.findOne({ id: taskData.space.id });
 
+      let newTask = await Task.findOneAndUpdate(
+        { id: taskData.id },
+        {
+          ...taskData,
+          list: list ? list._id : null,
+          folder: folder ? folder._id : null,
+          space: space._id,
+        },
         { upsert: true, new: true }
       );
 
       if (taskData.assignees && taskData.assignees.length > 0) {
         const memberId = taskData.assignees[0].id;
-        // console.log(taskData.list);
-
         let user = await User.findOne({ id: memberId });
-
-        if (!user) {
-          const userData = taskData.assignees[0];
-          user = new User(userData);
-          await user.save();
+        if (user) {
+          newTask.assignees = [user._id];
+          await newTask.save();
         }
-
-        newTask = await Task.findOneAndUpdate(
-          { id: taskData.id },
-          { ...taskData, list: list._id, assignees: [user._id] },
-
-          { upsert: true, new: true }
-        );
-      } else {
-        newTask = await Task.findOneAndUpdate({ id: taskData.id }, taskData, {
-          upsert: true,
-          new: true,
-        });
       }
 
       savedTasks.push(newTask);
@@ -175,7 +163,7 @@ async function getAllTasksFromClickup(apiUrl, token, team_Id) {
       tasks: savedTasks,
     };
 
-    return savedTasks;
+    return response;
   } catch (error) {
     console.error("Error fetching task lists:", error);
     throw error;

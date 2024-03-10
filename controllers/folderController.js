@@ -21,20 +21,18 @@ async function getFoldersBySpace(apiUrl, token, spaceId) {
       const spaceId = folderData.space.id;
       let space = await Space.findOne({ id: spaceId });
 
-      if (!space) {
-        // Si l'espace n'existe pas, le créer
-        space = new Space(folderData.space);
-        await space.save();
-      }
-
+      // console.log(space);
       const listIds = [];
 
       for (const listData of folderData.lists) {
         let list = await List.findOne({ id: listData.id });
 
         if (!list) {
-          // Si la liste n'existe pas, la créer
-          list = new List(listData);
+          list = new List({
+            ...listData,
+            space: space._id,
+            folder: folderData.id,
+          });
           await list.save();
         }
 
@@ -51,12 +49,12 @@ async function getFoldersBySpace(apiUrl, token, spaceId) {
         });
         await existingFolder.save();
       } else {
-        const newFolder = new Folder({
+        existingFolder = Folder.create({
           ...folderData,
           space: space._id,
           lists: listIds,
         });
-        await newFolder.save();
+        // await existingFolder.save();
       }
     }
 
@@ -66,9 +64,9 @@ async function getFoldersBySpace(apiUrl, token, spaceId) {
       count: folders.length,
     };
 
-    return response;
+    return response; // Retourne la réponse globale après avoir parcouru toutes les dossiers
   } catch (error) {
-    console.error("Error fetching folder lists:", error.message);
+    console.error("Error fetching folder lists:", error);
     throw error;
   }
 }

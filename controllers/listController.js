@@ -3,9 +3,20 @@ const List = require("../models/listSchema");
 const Space = require("../models/spaceSchema");
 const Folder = require("../models/folderSchema");
 
-async function getListsOutFolders(apiUrl, token, space_id) {
+async function getListsOutFolders0(apiUrl, token, space_id) {
   try {
-    await List.deleteMany();
+    const localLists = await List.find();
+    for (const list of localLists) {
+      const folder = await Folder.findOne({ id: list.folder });
+      if (folder) {
+        list.set({
+          ...list,
+
+          folder: folder._id,
+        });
+        await list.save();
+      }
+    }
     const folderListsResponse = await axios.get(
       `https://api.clickup.com/api/v2/space/${space_id}/list`,
       {
@@ -15,38 +26,84 @@ async function getListsOutFolders(apiUrl, token, space_id) {
       }
     );
     const lists = folderListsResponse.data.lists;
-    // console.log("space", space_id);
-    // Récupérer l'objet Space correspondant à l'espace spécifié
+
     let space = await Space.findOne({ id: space_id });
-    // console.log("space", space);
-    if (!space) {
-      space = new Space({ id: space_id });
-      await space.save();
-    }
 
-    // Parcourir chaque liste et l'associer à l'espace
     for (const listData of lists) {
-      const folderId = listData.folder.id;
-      let folder = await Folder.findOne({ id: folderId });
+      let folder = await Folder.findOne({ id: listData.folder.id });
 
-      if (!folder) {
-        // Si l'espace n'existe pas, le créer
-        folder = new Folder(listData.folder);
-        await folder.save();
+      if (folder) {
+        const newList = new List({
+          ...listData,
+          space: space._id,
+          folder: folder._id,
+        });
+        await newList.save();
+      } else {
+        const newList = new List({
+          ...listData,
+          space: space._id,
+          folder: null,
+        });
+        await newList.save();
       }
-      const newList = new List({
-        ...listData,
-        space: space._id,
-        folder: folder._id,
-      });
-      // console.log("newList", newList);
-
-      await newList.save();
     }
     // await List.insertMany(newList);
 
     const response = {
       message: " lists saved successfully",
+      status: 200,
+      count: lists.length,
+    };
+
+    return response;
+  } catch (error) {
+    console.error("Error fetching user lists:", error.message);
+    throw error;
+  }
+}
+async function getListsOutFolders(apiUrl, token, space_id) {
+  try {
+    // Retrieve local lists
+    const localLists = await List.find();
+
+    // Update local lists with corresponding folders
+    for (const list of localLists) {
+      const folder = await Folder.findOne({ id: list.folder });
+      if (folder) {
+        list.folder = folder._id;
+        await list.save();
+      }
+    }
+
+    // Fetch lists from the remote API
+    const folderListsResponse = await axios.get(
+      `https://api.clickup.com/api/v2/space/${space_id}/list`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+    const lists = folderListsResponse.data.lists;
+
+    // Find or create lists in the local database
+    let space = await Space.findOne({ id: space_id });
+    for (const listData of lists) {
+      let folder = await Folder.findOne({ id: listData.folder.id });
+
+      const newListData = {
+        ...listData,
+        space: space._id ? space._id : null,
+        folder: folder ? folder._id : null,
+      };
+
+      const newList = new List(newListData);
+      await newList.save();
+    }
+
+    const response = {
+      message: "Lists saved successfully",
       status: 200,
       count: lists.length,
     };

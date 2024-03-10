@@ -7,12 +7,12 @@ const spaceSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    members: [
-      {
-        type: Object,
-        ref: "User",
-      },
-    ],
+    // members: [
+    //   {
+    //     type: Object,
+    //     ref: "User",
+    //   },
+    // ],
   },
   { strict: false }
 );
