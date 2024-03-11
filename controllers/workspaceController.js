@@ -2,6 +2,7 @@ const axios = require("axios");
 const mongoose = require("mongoose");
 const List = require("../models/listSchema");
 const User = require("../models/userSchema");
+const Role = require("../models/roleSchema");
 const Space = require("../models/spaceSchema");
 const Folder = require("../models/folderSchema");
 const Workspace = require("../models/worksSchema");
@@ -11,19 +12,17 @@ const Task = require("../models/taskSchema");
 const taskController = require("../controllers/taskController");
 const listController = require("../controllers/listController");
 const spaceController = require("../controllers/spaceController");
-const folderController = require("../controllers/folderController");
+// const folderController = require("../controllers/folderController");
 const trackedTimeController = require("../controllers/trackedTimeController");
-const DataSchema = new mongoose.Schema({}, { strict: false });
-const Test = mongoose.model("Data", DataSchema);
 
-async function fetchAndSaveData(apiUrl, token, response) {
+async function GenarateDataBaseFromClickup(apiUrl, token, response) {
   try {
     await clearData();
-    // Récupérer les données des projets
-    const projectsResponse = await axios.get(apiUrl, {
+
+    const workspaceResponse = await axios.get(apiUrl, {
       headers: { Authorization: token },
     });
-    const workspaces = projectsResponse.data.teams;
+    const workspaces = workspaceResponse.data.teams;
 
     // Sauvegarder les données des espaces de travail
     for (const workspace of workspaces) {
@@ -34,11 +33,60 @@ async function fetchAndSaveData(apiUrl, token, response) {
       for (const newUser of workspace.members) {
         const memberId = newUser.user.id;
         let createUser = newUser.user;
+        const rolname = createUser.role;
 
-        await User.findOneAndUpdate({ id: memberId }, createUser, {
-          upsert: true,
-          new: true,
-        });
+        let roleName = "";
+        switch (rolname) {
+          case 1:
+            roleName = "admin";
+            break;
+          case 2:
+            roleName = "user";
+            break;
+          case 3:
+            roleName = "guest";
+            break;
+          case 4:
+            roleName = "owner";
+            break;
+          default:
+            roleName = "unknown"; // Rôle inconnu
+        }
+
+        let existingRole = await Role.findOne({ id: rolname });
+
+        if (!existingRole) {
+          existingRole = await Role.create({
+            name: roleName,
+            id: rolname,
+          });
+        }
+
+        let inviterUser;
+
+        if (newUser.invited_by) {
+          const invitedId = newUser.invited_by.id;
+
+          inviterUser = await User.findOne({ id: invitedId });
+
+          if (!inviterUser) {
+            inviterUser = await User.create(newUser.invited_by);
+          }
+        }
+
+        // Enregistrement ou mise à jour de l'utilisateur
+        const existUser = await User.findOneAndUpdate(
+          { id: memberId },
+          {
+            ...createUser,
+            invited_by: inviterUser ? inviterUser._id : null,
+            role: existingRole._id,
+          },
+          {
+            upsert: true,
+            new: true,
+          }
+        );
       }
 
       // Récupérer et sauvegarder les espaces et les dossiers
@@ -151,11 +199,77 @@ async function fetchAndSaveData(apiUrl, token, response) {
             );
           }
         }
+        const trackedTimeResponse = await axios.get(
+          `https://api.clickup.com/api/v2/task/${taskData.id}/time`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+          }
+        );
+        const trackedTimees = trackedTimeResponse.data.data;
+
+        for (const trackedData of trackedTimees) {
+          if (trackedData.user) {
+            const memberId = trackedData.user.id;
+            let user = await User.findOne({ id: memberId });
+            let task = await Task.findOne({ id: taskData.id });
+
+            const newTask = new TrackedTime({
+              ...trackedData,
+              user: user._id,
+              task: task._id,
+            });
+
+            await newTask.save();
+          }
+        }
       }
     }
 
     if (response) {
-      response.json({ success: "Data processed successfully." });
+      console.log("Data processed successfully");
+      const workspacesData = await Workspace.find();
+      const usersData = await User.find();
+      const spacesData = await Space.find();
+      const foldersData = await Folder.find();
+      const listsData = await List.find();
+      const tasksData = await Task.find();
+      const trackedTimesData = await TrackedTime.find();
+
+      // response.json(trackedTimesData);
+      response.json({
+        success: "Data processed successfully.",
+        workspaces: {
+          count: workspacesData.length,
+          data: workspacesData,
+        },
+        users: {
+          count: usersData.length,
+          data: usersData,
+        },
+        spaces: {
+          count: spacesData.length,
+          data: spacesData,
+        },
+        folders: {
+          count: foldersData.length,
+          data: foldersData,
+        },
+        lists: {
+          count: listsData.length,
+          data: listsData,
+        },
+        tasks: {
+          count: tasksData.length,
+          data: tasksData,
+        },
+        trackedTimes: {
+          count: trackedTimesData.length,
+          data: trackedTimesData,
+        },
+      });
     }
   } catch (error) {
     console.error("Error processing data:", error);
@@ -169,35 +283,6 @@ async function fetchAndSaveData(apiUrl, token, response) {
   }
 }
 
-async function fetchAndSaveData0(apiUrl, token, response) {
-  try {
-    await clearData();
-
-    const projectsResponse = await axios.get(apiUrl, {
-      headers: { Authorization: token },
-    });
-    const workspaces = projectsResponse.data.teams;
-
-    let workspaceData = new Workspace(workspace);
-    await workspaceData.save();
-
-    await Workspace.insertMany(workspaces);
-    console.log("Project data successfully saved in the database.");
-
-    if (response) {
-      response.json({ success: workspaces });
-    }
-  } catch (error) {
-    console.error("Error fetching or saving project data:", error);
-
-    if (response) {
-      response.status(500).json({
-        error:
-          "An error occurred while fetching or saving project data. Please check the logs for more details.",
-      });
-    }
-  }
-}
 async function clearData() {
   await Promise.all([
     Workspace.deleteMany(),
@@ -207,8 +292,9 @@ async function clearData() {
     Task.deleteMany(),
     Space.deleteMany(),
     Folder.deleteMany(),
-    Test.deleteMany(),
+
+    Role.deleteMany(),
   ]);
 }
 
-module.exports = { fetchAndSaveData };
+module.exports = { GenarateDataBaseFromClickup };

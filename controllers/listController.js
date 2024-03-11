@@ -2,66 +2,8 @@ const axios = require("axios");
 const List = require("../models/listSchema");
 const Space = require("../models/spaceSchema");
 const Folder = require("../models/folderSchema");
+const apiUrl = process.env.API_CLICKUP;
 
-async function getListsOutFolders0(apiUrl, token, space_id) {
-  try {
-    const localLists = await List.find();
-    for (const list of localLists) {
-      const folder = await Folder.findOne({ id: list.folder });
-      if (folder) {
-        list.set({
-          ...list,
-
-          folder: folder._id,
-        });
-        await list.save();
-      }
-    }
-    const folderListsResponse = await axios.get(
-      `https://api.clickup.com/api/v2/space/${space_id}/list`,
-      {
-        headers: {
-          Authorization: token,
-        },
-      }
-    );
-    const lists = folderListsResponse.data.lists;
-
-    let space = await Space.findOne({ id: space_id });
-
-    for (const listData of lists) {
-      let folder = await Folder.findOne({ id: listData.folder.id });
-
-      if (folder) {
-        const newList = new List({
-          ...listData,
-          space: space._id,
-          folder: folder._id,
-        });
-        await newList.save();
-      } else {
-        const newList = new List({
-          ...listData,
-          space: space._id,
-          folder: null,
-        });
-        await newList.save();
-      }
-    }
-    // await List.insertMany(newList);
-
-    const response = {
-      message: " lists saved successfully",
-      status: 200,
-      count: lists.length,
-    };
-
-    return response;
-  } catch (error) {
-    console.error("Error fetching user lists:", error.message);
-    throw error;
-  }
-}
 async function getListsOutFolders(apiUrl, token, space_id) {
   try {
     // Retrieve local lists
@@ -115,6 +57,31 @@ async function getListsOutFolders(apiUrl, token, space_id) {
   }
 }
 
+async function fetchAndSaveLists(workspaceId, token) {
+  const folderListsOutResponse = await axios.get(
+    `${apiUrl}team/${workspaceId}/list`,
+    { headers: { Authorization: token } }
+  );
+  const lists = folderListsOutResponse.data.lists;
+
+  await Promise.all(
+    lists.map(async (listData) => {
+      let folder = await Folder.findOne({ id: listData.folder.id });
+      let spaceFromLocal = await Space.findOne({ id: listData.space.id });
+
+      const newList = await List.findOneAndUpdate(
+        { id: listData.id },
+        {
+          ...listData,
+          space: spaceFromLocal ? spaceFromLocal._id : null,
+          folder: folder ? folder._id : null,
+        },
+        { upsert: true, new: true }
+      );
+    })
+  );
+}
+
 async function getListsInFolders(apiUrl, token, spaceId) {
   try {
     const folderListsResponse = await axios.get(
@@ -143,4 +110,9 @@ async function getLists(req, res) {
     res.status(500).json({ error: "Internal server error" });
   }
 }
-module.exports = { getListsOutFolders, getListsInFolders, getLists };
+module.exports = {
+  getListsOutFolders,
+  getListsInFolders,
+  getLists,
+  fetchAndSaveLists,
+};

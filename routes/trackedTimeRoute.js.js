@@ -19,8 +19,8 @@ route.get("/:task_id/trackedList", async (req, res) => {
     res.status(500).json({ error: error });
   }
 });
-// route.get("/:userId", userController.getUserById);
-// route.get("/", userController.getUserEmail);
-// route.get("/:taskId/task", userController.getUserByTask);
+route.get("/:trackedTimeId", trackedTimeController.getTrackedTimeById);
+route.get("/", trackedTimeController.getAllTrackedTime);
+route.get("/:userId/user", trackedTimeController.getTrackedTimesByUsers);
 
 module.exports = route;

@@ -3,6 +3,7 @@ const Folder = require("../models/folderSchema");
 const User = require("../models/userSchema");
 const Space = require("../models/spaceSchema");
 const List = require("../models/listSchema");
+const apiUrl = process.env.API_CLICKUP;
 
 async function getFoldersBySpace(apiUrl, token, spaceId) {
   try {
@@ -70,10 +71,41 @@ async function getFoldersBySpace(apiUrl, token, spaceId) {
     throw error;
   }
 }
+async function fetchAndSaveFolders(space, token) {
+  const folderListsResponse = await axios.get(
+    apiUrl + "space/" + space.id + "/folder",
+    {
+      headers: { Authorization: token },
+    }
+  );
+  const folders = folderListsResponse.data.folders;
+
+  await Promise.all(
+    folders.map(async (folderData) => {
+      let existSpace = await Space.findOne({ id: folderData.space.id });
+      let existFolder = await Folder.findOne({ id: folderData.id });
+
+      const listIds = [];
+      for (const listData of folderData.lists) {
+        // List data processing
+      }
+
+      let existingFolder = await Folder.findOneAndUpdate(
+        { id: folderData.id },
+        {
+          ...folderData,
+          space: existSpace._id,
+          lists: listIds,
+        },
+        { upsert: true, new: true }
+      );
+    })
+  );
+}
 
 async function getFolders(req, res) {
   try {
-    const folder = await Folder.find();
+    const folder = await Folder.find().populate("space");
     if (!folder) {
       return res.status(400).json({ error: "Folder not found" });
     }
@@ -82,4 +114,4 @@ async function getFolders(req, res) {
     res.status(500).json({ error: error });
   }
 }
-module.exports = { getFoldersBySpace, getFolders };
+module.exports = { getFoldersBySpace, getFolders, fetchAndSaveFolders };

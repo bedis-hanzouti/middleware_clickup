@@ -12,6 +12,10 @@ const trakedTime = new mongoose.Schema(
         ref: "Task",
       },
     ],
+    user: {
+      type: Object,
+      ref: "User",
+    },
   },
   { strict: false }
 );

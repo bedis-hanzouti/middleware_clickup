@@ -50,6 +50,15 @@ async function getUserLists(apiUrl, token, list_id) {
   }
 }
 
+async function saveUser(user) {
+  const memberId = user.id;
+  let createUser = user;
+  await User.findOneAndUpdate({ id: memberId }, createUser, {
+    upsert: true,
+    new: true,
+  });
+}
+
 async function getUserById(req, res) {
   try {
     const { userId } = req.params;
@@ -90,14 +99,21 @@ async function getUserByTask(req, res) {
       return res.status(404).json({ error: "Task not found" });
     }
 
-    // Récupération des assignés de la tâche
     const assignees = task.assignees;
 
-    res.json(assignees);
+    const user = await User.findById(assignees);
+
+    res.json(user);
   } catch (error) {
     console.error("Error fetching assignees by task:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 }
 
-module.exports = { getUserLists, getUserById, getUserEmail, getUserByTask };
+module.exports = {
+  getUserLists,
+  getUserById,
+  getUserEmail,
+  getUserByTask,
+  saveUser,
+};

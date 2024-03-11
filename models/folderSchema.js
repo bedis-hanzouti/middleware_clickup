@@ -7,7 +7,7 @@ const folderSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    spaces: {
+    space: {
       type: Object,
       ref: "Space",
     },

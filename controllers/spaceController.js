@@ -1,6 +1,7 @@
 const axios = require("axios");
 const Space = require("../models/spaceSchema");
-const User = require("../models/userSchema");
+const { fetchAndSaveFolders } = require("./FolderController");
+const apiUrl = process.env.API_CLICKUP;
 
 async function getSpaceLists(apiUrl, token, workspaceId) {
   try {
@@ -34,6 +35,24 @@ async function getSpaceLists(apiUrl, token, workspaceId) {
   }
 }
 
+async function fetchAndSaveSpaces(workspaceId, token) {
+  const spaceListsResponse = await axios.get(
+    apiUrl + "team/" + workspaceId + "/space",
+    {
+      headers: { Authorization: token },
+    }
+  );
+  const spaces = spaceListsResponse.data.spaces;
+
+  await Promise.all(
+    spaces.map(async (space) => {
+      let newSpace = new Space(space);
+      await newSpace.save();
+      await fetchAndSaveFolders(space, token);
+    })
+  );
+}
+
 async function getSpaces(req, res) {
   try {
     const spaces = await Space.find().populate("members");
@@ -45,4 +64,4 @@ async function getSpaces(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
-module.exports = { getSpaces, getSpaceLists };
+module.exports = { getSpaces, getSpaceLists, fetchAndSaveSpaces };
