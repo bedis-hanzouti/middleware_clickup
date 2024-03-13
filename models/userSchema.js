@@ -7,10 +7,10 @@ const userSchema = new mongoose.Schema(
 
       unique: true,
     },
-    invited_by: {
-      type: Object,
-      ref: "User",
-    },
+    // invited_by: {
+    //   type: Object,
+    //   ref: "User",
+    // },
     role: {
       type: Object,
       ref: "Role",

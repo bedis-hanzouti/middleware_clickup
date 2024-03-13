@@ -3,62 +3,6 @@ const axios = require("axios");
 const User = require("../models/userSchema");
 const Task = require("../models/taskSchema");
 
-async function getUserLists(apiUrl, token, list_id) {
-  try {
-    const userListsResponse = await axios.get(
-      `https://api.clickup.com/api/v2/list/${list_id}/member`,
-      {
-        headers: {
-          Authorization: token,
-        },
-      }
-    );
-    const users = userListsResponse.data;
-    for (const userData of users.members) {
-      if (userData && userData.length > 0) {
-        const memberId = userData.id;
-
-        let user = await User.findOne({ clickup_id: memberId });
-        if (!user) {
-          user = new User({
-            clickup_id: memberId,
-            username: userData.username,
-            color: userData.color,
-            email: userData.email,
-            profilePicture: userData.profilePicture,
-          });
-
-          await user.save();
-        }
-      }
-    }
-    // Supprimer tous les utilisateurs existants
-    await User.deleteMany();
-    // Insérer les nouveaux utilisateurs dans la base de données
-    await User.insertMany(users.members);
-
-    const response = {
-      message: "User lists saved successfully",
-      status: 200,
-      count: users.members.length,
-    };
-
-    return response;
-  } catch (error) {
-    console.error("Error fetching user lists:", error);
-    throw error;
-  }
-}
-
-async function saveUser(user) {
-  const memberId = user.id;
-  let createUser = user;
-  await User.findOneAndUpdate({ id: memberId }, createUser, {
-    upsert: true,
-    new: true,
-  });
-}
-
 async function getUserById(req, res) {
   try {
     const { userId } = req.params;
@@ -111,9 +55,7 @@ async function getUserByTask(req, res) {
 }
 
 module.exports = {
-  getUserLists,
   getUserById,
   getUserEmail,
   getUserByTask,
-  saveUser,
 };

@@ -7,7 +7,11 @@ const token = process.env.TOKEN_CLICKUP;
 
 route.get("", async (req, res) => {
   try {
-    await workspaceController.GenarateDataBaseFromClickup(api_url, token, res);
+    await workspaceController.GenarateDataBaseFromClickup(
+      api_url + "team",
+      token,
+      res
+    );
   } catch (error) {
     console.error("Error in /projects route:", error);
     res.status(500).send("Internal Server Error");

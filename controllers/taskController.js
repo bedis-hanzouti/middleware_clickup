@@ -6,108 +6,6 @@ const Folder = require("../models/folderSchema");
 const Space = require("../models/spaceSchema");
 const apiUrl = process.env.API_CLICKUP;
 
-const { fetchAndSaveTrackedTime } = require("./trackedTimeController");
-
-async function getAllTasksFromClickup(apiUrl, token, team_Id) {
-  try {
-    const tasksResponse = await axios.get(
-      `https://api.clickup.com/api/v2/team/${team_Id}/task`,
-      {
-        headers: {
-          Authorization: token,
-        },
-      }
-    );
-    const tasks = tasksResponse.data.tasks;
-
-    let savedTasks = [];
-
-    // Iterate through tasks
-    for (const taskData of tasks) {
-      let folder = await Folder.findOne({ id: taskData.folder.id });
-      let list = await List.findOne({ id: taskData.list.id });
-      let space = await Space.findOne({ id: taskData.space.id });
-
-      let newTask = await Task.findOneAndUpdate(
-        { id: taskData.id },
-        {
-          ...taskData,
-          list: list ? list._id : null,
-          folder: folder ? folder._id : null,
-          space: space._id,
-        },
-        { upsert: true, new: true }
-      );
-
-      if (taskData.assignees && taskData.assignees.length > 0) {
-        const memberId = taskData.assignees[0].id;
-        let user = await User.findOne({ id: memberId });
-        if (user) {
-          newTask.assignees = [user._id];
-          await newTask.save();
-        }
-      }
-
-      savedTasks.push(newTask);
-    }
-
-    const response = {
-      message: "Tasks saved successfully",
-      status: 200,
-      count: savedTasks.length,
-      tasks: savedTasks,
-    };
-
-    return response;
-  } catch (error) {
-    console.error("Error fetching task lists:", error);
-    throw error;
-  }
-}
-async function fetchAndSaveTasks(workspaceId, token) {
-  const tasksResponse = await axios.get(`${apiUrl}team/${workspaceId}/task`, {
-    headers: { Authorization: token },
-  });
-  const tasks = tasksResponse.data.tasks;
-
-  await Promise.all(
-    tasks.map(async (taskData) => {
-      let folder = await Folder.findOne({ id: taskData.folder.id });
-      let list = await List.findOne({ id: taskData.list.id });
-      let spaceFromLocalTwo = await Space.findOne({ id: taskData.space.id });
-
-      let newTask = await Task.findOneAndUpdate(
-        { id: taskData.id },
-        {
-          ...taskData,
-          list: list ? list._id : null,
-          folder: folder ? folder._id : null,
-          space: spaceFromLocalTwo ? spaceFromLocalTwo._id : null,
-        },
-        { upsert: true, new: true }
-      );
-
-      if (taskData.assignees && taskData.assignees.length > 0) {
-        const memberId = taskData.assignees[0].id;
-        let user = await User.findOne({ id: memberId });
-
-        if (user) {
-          let newTask = await Task.findOneAndUpdate(
-            { id: taskData.id },
-            {
-              ...taskData,
-              assignees: [user._id],
-            },
-            { upsert: true, new: true }
-          );
-        }
-      }
-
-      await fetchAndSaveTrackedTime(taskData, token);
-    })
-  );
-}
-
 async function getAllTasks(req, res) {
   try {
     const {
@@ -230,8 +128,7 @@ async function getTasksByTags(req, res) {
 module.exports = {
   // saveTasksFromClickup,
   getAllTasks,
-  fetchAndSaveTasks,
-  getAllTasksFromClickup,
+
   getTaskById,
   getTasksByAssignees,
   getTasksByStatus,
