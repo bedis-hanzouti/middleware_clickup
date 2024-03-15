@@ -1,14 +1,28 @@
 require("dotenv").config();
+const morgan = require("morgan");
+const fs = require("fs");
+const path = require("path");
 const express = require("express");
 const figlet = require("figlet");
 const apiRouter = require("./routes/router");
 const app = express();
 const PORT = process.env.PORT;
 require("./config/dataBase/dbConfig");
-require("./config/jobs/getProjectCron");
+require("./config/jobs/getAllDataFromClickupCron");
 
 app.use(express.json({ limit: "20kb" }));
-
+const stream = fs.createWriteStream(path.join(__dirname, "logger.log"), {
+  flags: "a",
+});
+if (process.env.NODE_ENV === "development") {
+  app.use(
+    morgan("combined", {
+      stream: stream,
+    })
+  );
+  app.use(morgan("dev"));
+  console.log(`mode: ${process.env.NODE_ENV}`);
+}
 app.use("/api/v1", apiRouter);
 
 try {

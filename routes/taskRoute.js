@@ -5,7 +5,6 @@ const taskController = require("../controllers/taskController");
 const api_url = process.env.API_CLICKUP;
 const token = process.env.TOKEN_CLICKUP;
 
-// route.get("/:listId/tasks", async (req, res) => {
 //   try {
 //     const listId = req.params.listId;
 //     const taskList = await taskController.saveTasksFromClickup(
@@ -19,24 +18,13 @@ const token = process.env.TOKEN_CLICKUP;
 //   }
 // });
 
-route.get("/:teamId/", async (req, res) => {
-  try {
-    const teamId = req.params.teamId;
-    const taskList = await taskController.getAllTasksFromClickup(
-      api_url,
-      token,
-      teamId
-    );
-    res.json(taskList);
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
 route.get("/", taskController.getAllTasks);
 route.get("/:id", taskController.getTaskById);
-route.get("/assignees/:assigneeId", taskController.getTasksByAssignees);
-route.get("/status/:status", taskController.getTasksByStatus);
-route.get("/priority/:priority", taskController.getTasksByStatus);
+route.get("/:id/folder", taskController.getTasksByFolder);
+route.get("/:id/list", taskController.getTasksByList);
+route.get("/:id/space", taskController.getTasksBySpace);
+route.get("/:assigneeId/user", taskController.getTasksByAssignees);
+route.get("/:status/status", taskController.getTasksByStatus);
+route.get("/:priority/priority", taskController.getTasksByStatus);
 
 module.exports = route;

@@ -8,7 +8,7 @@ const customFieldSchema = new mongoose.Schema(
       unique: true,
     },
 
-    task: [
+    tasks: [
       {
         type: Object,
         ref: "Task",

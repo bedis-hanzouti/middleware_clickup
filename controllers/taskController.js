@@ -81,6 +81,64 @@ async function getTasksByAssignees(req, res) {
   }
 }
 
+async function getTasksByFolder(req, res) {
+  try {
+    const folderId = req.params.id;
+    let filteredTasks = [];
+
+    const tasks = await Task.find();
+
+    for (const task of tasks) {
+      if (task.folder && task.folder == folderId) {
+        filteredTasks.push(task);
+      }
+    }
+
+    res.json(filteredTasks);
+  } catch (error) {
+    console.error("Error fetching tasks by folder:", error);
+    res.status(500).json({ error: error });
+  }
+}
+
+async function getTasksBySpace(req, res) {
+  try {
+    const spaceId = req.params.id;
+    let filteredTasks = [];
+
+    const tasks = await Task.find();
+
+    for (const task of tasks) {
+      if (task.space && task.space == spaceId) {
+        filteredTasks.push(task);
+      }
+    }
+
+    res.json(filteredTasks);
+  } catch (error) {
+    console.error("Error fetching tasks by folder:", error);
+    res.status(500).json({ error: error });
+  }
+}
+async function getTasksByList(req, res) {
+  try {
+    const listId = req.params.id;
+    let filteredTasks = [];
+
+    const tasks = await Task.find();
+
+    for (const task of tasks) {
+      if (task.list && task.list == listId) {
+        filteredTasks.push(task);
+      }
+    }
+
+    res.json(filteredTasks);
+  } catch (error) {
+    console.error("Error fetching tasks by folder:", error);
+    res.status(500).json({ error: error });
+  }
+}
 async function getTasksByStatus(req, res) {
   try {
     const { status } = req.params;
@@ -128,10 +186,12 @@ async function getTasksByTags(req, res) {
 module.exports = {
   // saveTasksFromClickup,
   getAllTasks,
-
+  getTasksBySpace,
   getTaskById,
   getTasksByAssignees,
   getTasksByStatus,
   getTasksByPriority,
   getTasksByTags,
+  getTasksByFolder,
+  getTasksByList,
 };

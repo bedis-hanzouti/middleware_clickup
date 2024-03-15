@@ -1,24 +1,13 @@
 const express = require("express");
+const {
+  getFolders,
+  getFoldersBySpace,
+  getFolderById,
+} = require("../controllers/FolderController");
 const route = express.Router();
-const folderController = require("../controllers/folderController");
 
-const api_url = process.env.API_CLICKUP;
-const token = process.env.TOKEN_CLICKUP;
-
-route.get("/:spaceId/spaceLists", async (req, res) => {
-  try {
-    const spaceId = req.params.spaceId;
-    const spaceLists = await folderController.getFoldersBySpace(
-      "api_url",
-      token,
-      spaceId
-    );
-    res.json(spaceLists);
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-route.get("/", folderController.getFolders);
+route.get("/:spaceId/space", getFoldersBySpace);
+route.get("/", getFolders);
+route.get("/:id", getFolderById);
 
 module.exports = route;

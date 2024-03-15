@@ -33,14 +33,16 @@ async function getTrackedTimeById(req, res) {
 
 async function getTrackedTimesByUsers(req, res) {
   try {
-    const { userId } = req.params;
-    console.log(userId);
+    const id = req.params.id;
+    let filteredTasks = [];
 
     const TrackedTimes = await TrackedTime.find();
 
-    const filteredTasks = TrackedTimes.filter((tracked) => {
-      return tracked.user.some((user) => user._id == userId);
-    });
+    for (const tracked of TrackedTimes) {
+      if (tracked.user && tracked.user == id) {
+        filteredTasks.push(tracked);
+      }
+    }
 
     res.json(filteredTasks);
   } catch (error) {

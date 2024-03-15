@@ -13,6 +13,12 @@ const listSchema = new mongoose.Schema(
       type: Object,
       ref: "Space",
     },
+    members: [
+      {
+        type: Object,
+        ref: "User",
+      },
+    ],
   },
   { strict: false }
 );

@@ -14,4 +14,17 @@ async function getSpaces(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
-module.exports = { getSpaces };
+
+async function getSpaceById(req, res) {
+  try {
+    const id = req.params.id;
+    const spaces = await Space.findById(id).populate("members");
+    if (!spaces || spaces.length === 0) {
+      return res.status(404).json({ error: "Spaces not found" });
+    }
+    res.json(spaces);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+module.exports = { getSpaces, getSpaceById };

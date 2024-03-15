@@ -9,4 +9,5 @@ module.exports = {
   Task: require("./taskSchema"),
   CustomField: require("./CustomFieldsSchema"),
   Tracker: require("./trackerSchema"),
+  Permission: require("./permissionSchema"),
 };
