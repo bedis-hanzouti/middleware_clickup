@@ -7,7 +7,7 @@ module.exports = {
   Workspace: require("./worksSchema"),
   TrackedTime: require("./trakedTimeSchema"),
   Task: require("./taskSchema"),
-  CustomField: require("./CustomFieldsSchema"),
+  CustomField: require("./customFieldsSchema"),
   Tracker: require("./trackerSchema"),
   Permission: require("./permissionSchema"),
 };
