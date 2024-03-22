@@ -13,6 +13,8 @@ const {
   Tracker,
 } = require("../models");
 const { clearData } = require("../config/dataBase/dropDB");
+const { client } = require("../config/elasticsearch/config");
+
 const api_url = process.env.API_CLICKUP;
 async function GenarateDataBaseFromClickup(apiUrl, token, response) {
   try {
@@ -249,6 +251,23 @@ async function GenarateDataBaseFromClickup(apiUrl, token, response) {
       response.status(200).json({ success: "Data saved successfully" });
 
       // const workspacesData = await Workspace.find();
+      // const roleData = await Role.find();
+      // await client.deleteByQuery({
+      //   index: "roleindex",
+      //   body: {
+      //     query: { match_all: {} },
+      //   },
+      // });
+      // for (const doc of roleData) {
+      //   await client.index({
+      //     index: "roleindex",
+      //     id: doc._id.toString(), // Convertir l'ID MongoDB en chaîne
+      //     body: { id: doc._id.toString(), name: doc.name }, // Indexer uniquement l'ID
+      //   });
+      // }
+
+      // console.log("Indexation terminée.");
+
       // const usersData = await User.find();
       // const spacesData = await Space.find();
       // const foldersData = await Folder.find();

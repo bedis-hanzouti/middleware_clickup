@@ -9,6 +9,7 @@ const taskRoutes = require("./taskRoute");
 const userRoutes = require("./userRoute");
 const trackedRoutes = require("./trackedTimeRoute.js");
 const trackerRoutes = require("./trackerRoute");
+const elasticSearchRoutes = require("./elasticSearchRoute.js");
 
 router.use("/saveData", workspaceRoute);
 router.use("/spaces", spaceRoutes);
@@ -18,5 +19,6 @@ router.use("/tasks", taskRoutes);
 router.use("/users", userRoutes);
 router.use("/tracked", trackedRoutes);
 router.use("/trackers", trackerRoutes);
+router.use("/elasticsearch", elasticSearchRoutes);
 
 module.exports = router;
