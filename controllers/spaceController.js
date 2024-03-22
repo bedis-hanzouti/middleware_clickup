@@ -1,6 +1,6 @@
 const axios = require("axios");
 const Space = require("../models/spaceSchema");
-const { fetchAndSaveFolders } = require("./FolderController");
+const { fetchAndSaveFolders } = require("./folderController");
 const apiUrl = process.env.API_CLICKUP;
 
 async function getSpaces(req, res) {

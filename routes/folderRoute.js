@@ -3,7 +3,7 @@ const {
   getFolders,
   getFoldersBySpace,
   getFolderById,
-} = require("../controllers/FolderController");
+} = require("../controllers/folderController");
 const route = express.Router();
 
 route.get("/:spaceId/space", getFoldersBySpace);
