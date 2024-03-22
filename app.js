@@ -52,7 +52,7 @@ app.get("/", (req, res) => {
     const output = `
       <div style="text-align:center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden;">
         <video autoplay muted loop style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); min-width: 100%; min-height: 100%;">
-          <source src="./uploads//Welcome to the Game - Hacking Alert.mp4" type="video/mp4">
+          <source src="./uploads/Welcome to the Game - Hacking Alert.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
